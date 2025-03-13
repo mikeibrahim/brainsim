@@ -3,19 +3,42 @@ using UnityEditor;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using Unity.Collections;
+using System.Runtime.InteropServices;
 
-public class HierarchyPanel : EditorWindow
+public class HierarchyPanel : Panel
 {
     private UKS_Data selectedData;
     private UKS_Node selectedNode;
     private Dictionary<UKS_Node, float> changedNodes;
     private readonly float highlightTime = 1f;
+    private UKSPanel uksPanel;
 
     [MenuItem("Window/Hierarchy Panel")]
     public static void ShowWindow() => GetWindow<HierarchyPanel>("Hierarchy Panel");
 
     private void OnGUI()
     {
+        if (uksPanel == null) uksPanel = GetWindow<UKSPanel>("UKS Panel");
+
+        List<string> options = new List<string>();
+        foreach (UKS_Object obj in uksPanel.GetUKSObjects()) options.Add(obj.GetData().label);
+        foreach (UKS_Data data in uksPanel.GetSavedUKSData()) options.Add(data.label);
+
+        if (options.Count == 0)
+        {
+            EditorGUILayout.LabelField("No UKS Data found.");
+            return;
+        }
+        EditorGUILayout.LabelField("Select UKS Data:");
+        int selectedIndex = selectedData != null ? options.IndexOf(selectedData.label) : 0;
+        selectedIndex = EditorGUILayout.Popup(selectedIndex, options.ToArray());
+
+        if (selectedIndex >= 0 && selectedIndex < uksPanel.GetUKSObjects().Count)
+            selectedData = uksPanel.GetUKSObjects()[selectedIndex].GetData();
+        else if (selectedIndex >= uksPanel.GetUKSObjects().Count && selectedIndex < options.Count)
+            selectedData = uksPanel.GetSavedUKSData()[selectedIndex - uksPanel.GetUKSObjects().Count];
+
+        Debug.Log("Selected data: " + selectedData.label);
         // make a button to select the data from 
         // if (GUILayout.Button("Click Me"))
         // {
@@ -32,20 +55,13 @@ public class HierarchyPanel : EditorWindow
         // EditorGUILayout.EndVertical();
     }
 
-    private void StartPlaymode()
+    public override void StartPlayMode()
     {
+        Debug.Log("Starting Hierarchy Panel playmode");
     }
 
-    private void EndPlaymode()
+    public override void EndPlayMode()
     {
+        Debug.Log("Ending Hierarchy Panel playmode");
     }
-
-    // Handle play mode state changes
-    private void OnPlayModeStateChanged(PlayModeStateChange state)
-    {
-        if (state == PlayModeStateChange.EnteredPlayMode) StartPlaymode();
-        else if (state == PlayModeStateChange.ExitingPlayMode) EndPlaymode();
-    }
-    private void OnEnable() => EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-    private void OnDisable() => EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
 }

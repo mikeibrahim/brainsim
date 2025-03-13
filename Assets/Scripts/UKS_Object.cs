@@ -13,7 +13,7 @@ public class UKS_Object : MonoBehaviour
     [SerializeField] private string label;
     private UKS_Data data;
 
-    public void Awake() => data = new UKS_Data(label);
+    public void Awake() => data = new UKS_Data(label, new(), new());
 
     public void AddEdge(UKS_Node sourceNode, UKS_Node targetNode, UKS_Node relationshipType)
     {

@@ -1,0 +1,14 @@
+{
+  "$id": "1",
+  "label": "Agent_0",
+  "nodes": {
+    "$id": "2",
+    "UnknownObject": {
+      "$id": "3",
+      "label": "UnknownObject",
+      "relationships": {
+        "$id": "4"
+      }
+    }
+  }
+}

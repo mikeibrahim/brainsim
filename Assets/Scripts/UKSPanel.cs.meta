@@ -3,7 +3,9 @@ guid: c113d1d2b3fd442c1816aada8f6b14a4
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - m_ViewDataDictionary: {instanceID: 0}
+  - agentPrefab: {fileID: 5598511960191349753, guid: 16a38ee4aa00a4535b989e028e6c8859, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -1,52 +1,40 @@
 using UnityEngine;
 using UnityEditor;
+using Unity.VisualScripting;
 using System.Collections.Generic;
-using Unity.Mathematics;
-using Unity.Collections;
-using System.Runtime.InteropServices;
 
-/*
-I want to have an inputfield for the target relationship type and source
-and then a button to add the relationship to the current UKS data specified in the hierarchy panel
-*/
 public class RelationshipPanel : Panel
 {
-    private string sourceNode;
-    private string targetNode;
-    private string relationshipType;
-    private HierarchyPanel hierarchyPanel;
+    private static string sourceLabel = "";
+    private static string targetLabel = "";
+    private static string relationshipLabel = "";
+    private static UKS_Data data;
 
     [MenuItem("Window/Relationship Panel")]
-    public static void ShowWindow() => GetWindow<RelationshipPanel>("Relationship Panel");
+    public static void ShowWindow() => GetWindow<RelationshipPanel>();
 
     private void OnGUI()
     {
-        // if (hierarchyPanel == null) hierarchyPanel = GetWindow<HierarchyPanel>("Hierarchy Panel");
-        // EditorGUILayout.LabelField("Relationship Panel");
-        // sourceNode = EditorGUILayout.TextField("Source Node", sourceNode);
-        // relationshipType = EditorGUILayout.TextField("Relationship Type", relationshipType);
-        // targetNode = EditorGUILayout.TextField("Target Node", targetNode);
-        // if (GUILayout.Button("Add Relationship")) AddRelationship(sourceNode, targetNode, relationshipType);
+        if (data == null) EditorGUILayout.LabelField("No UKS Data selected.");
+        else
+        {
+            sourceLabel = EditorGUILayout.TextField("Source Node", sourceLabel);
+            relationshipLabel = EditorGUILayout.TextField("Relationship Type", relationshipLabel);
+            targetLabel = EditorGUILayout.TextField("Target Node", targetLabel);
+            if (GUILayout.Button("Add Relationship")) AddRelationship(sourceLabel, targetLabel, relationshipLabel);
+        }
     }
-
-    private void AddRelationship(string sourceNode, string targetNode, string relationshipType)
+    private void AddRelationship(string sourceLabel, string targetLabel, string relationshipLabel)
     {
-        UKS_Data data = hierarchyPanel.GetSelectedData();
-        // if (data.active)
-        // {
-        //     // if the data belongs to an agent, get the agent
-        //     // Agent agent = hierarchyPanel.GetSelectedAgent();
-        // }
+        if (data == null) { Debug.LogWarning("No UKS Data selected."); return; }
+        if (sourceLabel == "" || targetLabel == "" || relationshipLabel == "") { Debug.LogWarning("Please fill in all fields."); return; }
+        sourceLabel = LintString(sourceLabel);
+        targetLabel = LintString(targetLabel);
+        relationshipLabel = LintString(relationshipLabel);
+        data.AddRelationship(sourceLabel, relationshipLabel, targetLabel);
+        UKSPanel.SaveDataToFile(data); // Save the updated data to file
     }
-
-    public override void StartPlayMode()
-    {
-        Debug.Log("Starting Relationship Panel playmode");
-    }
-
-    public override void EndPlayMode()
-    {
-        Debug.Log("Ending Relationship Panel playmode");
-    }
-
+    private string LintString(string str) => str.Trim().ToLower();
+    public static void SetData(UKS_Data data) => RelationshipPanel.data = data;
+    public static void UpdatePanel() => GetWindow<RelationshipPanel>().Repaint();
 }

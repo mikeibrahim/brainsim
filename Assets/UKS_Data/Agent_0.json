@@ -1,13 +1,58 @@
 {
-  "$id": "1",
   "label": "Agent_0",
   "nodes": {
-    "$id": "2",
-    "UnknownObject": {
-      "$id": "3",
-      "label": "UnknownObject",
+    "Thing": {
+      "label": "Thing",
+      "relationships": {}
+    },
+    "RelationshipType": {
+      "label": "RelationshipType",
       "relationships": {
-        "$id": "4"
+        "is-a": "Thing"
+      }
+    },
+    "is-a": {
+      "label": "is-a",
+      "relationships": {
+        "is-a": "RelationshipType",
+        "RelationshipType": "Thing",
+        "fido": "dog",
+        "dog": "Thing",
+        "fetch": "action",
+        "can play": "RelationshipType",
+        "action": "Thing"
+      }
+    },
+    "fido": {
+      "label": "fido",
+      "relationships": {
+        "is-a": "dog",
+        "can play": "fetch"
+      }
+    },
+    "dog": {
+      "label": "dog",
+      "relationships": {
+        "is-a": "Thing"
+      }
+    },
+    "fetch": {
+      "label": "fetch",
+      "relationships": {
+        "is-a": "action"
+      }
+    },
+    "can play": {
+      "label": "can play",
+      "relationships": {
+        "is-a": "RelationshipType",
+        "fido": "fetch"
+      }
+    },
+    "action": {
+      "label": "action",
+      "relationships": {
+        "is-a": "Thing"
       }
     }
   }

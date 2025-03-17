@@ -10,14 +10,12 @@ using UnityEditor.Experimental.GraphView;
 
 public class HierarchyNode
 {
-    public UKS_Node node;
+    public string label;
     public Dictionary<string, HierarchyNode> children;
-    public bool expanded;
 
-    public HierarchyNode(UKS_Node node, bool expanded)
+    public HierarchyNode(string label)
     {
-        this.node = node;
+        this.label = label;
         children = new Dictionary<string, HierarchyNode>();
-        this.expanded = expanded;
     }
 }

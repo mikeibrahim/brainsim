@@ -76,56 +76,26 @@ public class UKSPanel : Panel
         }
         UpdatePanel();
     }
-    private void SaveDataToFile(UKS_Data data)
-    {
-        if (agents.ContainsKey(data.label)) agents.Remove(data.label); // Remove from active agents if it exists
-        string destination = savePath + data.label + ".json";
-        if (!Directory.Exists(savePath)) Directory.CreateDirectory(savePath);
-        string json = Serialize(data);
-        File.WriteAllText(destination, json);
-        UpdatePanel();
-    }
     private void LoadAgent(UKS_Data data)
     {
         Agent agent = Instantiate(agentPrefab);
         agent.SetData(data);
         agents.Add(data.label, agent);
     }
-    private static string Serialize(UKS_Data data) => JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { PreserveReferencesHandling = PreserveReferencesHandling.Objects });
-    private static UKS_Data Deserialize(string json) => JsonConvert.DeserializeObject<UKS_Data>(json, new JsonSerializerSettings { PreserveReferencesHandling = PreserveReferencesHandling.Objects });
-    private string GetUniqueDataName()
+    // private static string Serialize(UKS_Data data) => JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { PreserveReferencesHandling = PreserveReferencesHandling.Objects });
+    // private static UKS_Data Deserialize(string json) => JsonConvert.DeserializeObject<UKS_Data>(json, new JsonSerializerSettings { PreserveReferencesHandling = PreserveReferencesHandling.Objects });
+    private static string Serialize(UKS_Data data) => JsonConvert.SerializeObject(data, Formatting.Indented);
+    private static UKS_Data Deserialize(string json) => JsonConvert.DeserializeObject<UKS_Data>(json);
+    private static string GetUniqueDataName()
     {
         string baseName = "Agent_";
         int index = 0;
         string uniqueName = baseName + index;
-        while (agents.ContainsKey(uniqueName) || savedData.ContainsKey(uniqueName))
-        {
-            index++;
-            uniqueName = baseName + index;
-        }
+        while (savedData.ContainsKey(uniqueName)) { index++; uniqueName = baseName + index; }
         return uniqueName;
     }
-    // private void UpdateHierarchyPanel()
-    // {
-    //     string[] dataLabels = savedData.Keys.ToArray();
-    //     GetWindow<HierarchyPanel>("Hierarchy Panel").SetDataLabels(dataLabels);
-    //     // TODO: update all the variables on change
-    // }
-    public override void StartPlayMode() { }
-    public override void EndPlayMode() => SaveAllAgents();
-    private void SaveAllAgents()
-    {
-        foreach (Agent agent in agents.Values) SaveDataToFile(agent.GetData());
-        agents.Clear();
-    }
-    [UnityEditor.Callbacks.DidReloadScripts]
-    private static void OnScriptsReloaded()
-    {
-        DisplayStats();
-        HierarchyPanel.DisplayStats();
-        UpdatePanel();
-    }
-    public static void UpdatePanel()
+    private static void SaveAllAgents() { foreach (Agent agent in agents.Values) SaveDataToFile(agent.GetData()); agents.Clear(); }
+    private static void UpdateSavedData()
     {
         savedData = new();
         if (!Directory.Exists(savePath)) Directory.CreateDirectory(savePath);
@@ -135,11 +105,27 @@ public class UKSPanel : Panel
             UKS_Data data = Deserialize(json);
             savedData.Add(data.label, data);
         }
+    }
+    public static void SaveDataToFile(UKS_Data data)
+    {
+        if (agents.ContainsKey(data.label)) agents.Remove(data.label); // Remove from active agents if it exists
+        string destination = savePath + data.label + ".json";
+        if (!Directory.Exists(savePath)) Directory.CreateDirectory(savePath);
+        string json = Serialize(data);
+        File.WriteAllText(destination, json);
+        UpdatePanel();
+    }
+    public static void UpdatePanel()
+    {
+        UpdateSavedData();
         HierarchyPanel.SetDataLabels(savedData.Keys.ToArray());
         HierarchyPanel.UpdatePanel();
         GetWindow<UKSPanel>().Repaint();
     }
-    public static void DisplayStats() => Debug.Log($"Active Agents: {agents.Count}, Saved Data: {savedData.Count}");
+    [UnityEditor.Callbacks.DidReloadScripts]
+    private static void OnScriptsReloaded() => UpdatePanel();
+    public override void StartPlayMode() => UpdatePanel();
+    public override void EndPlayMode() { SaveAllAgents(); UpdatePanel(); }
     // Getters
     public static UKS_Data GetData(string label)
     {

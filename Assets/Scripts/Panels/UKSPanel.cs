@@ -37,7 +37,11 @@ public class UKSPanel : Panel
                 EditorGUILayout.LabelField("Label: " + data.label);
                 EditorGUI.indentLevel++;
                 EditorGUILayout.LabelField("Nodes: " + data.nodes.Count);
-                if (GUILayout.Button("Save Agent to File")) SaveDataToFile(data);
+                if (GUILayout.Button("Save Agent to File"))
+                {
+                    SaveDataToFile(data);
+                    agents.Remove(data.label); // Remove from active agents after saving
+                }
                 EditorGUI.indentLevel--;
                 EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             }
@@ -108,7 +112,6 @@ public class UKSPanel : Panel
     }
     public static void SaveDataToFile(UKS_Data data)
     {
-        if (agents.ContainsKey(data.label)) agents.Remove(data.label); // Remove from active agents if it exists
         string destination = savePath + data.label + ".json";
         if (!Directory.Exists(savePath)) Directory.CreateDirectory(savePath);
         string json = Serialize(data);

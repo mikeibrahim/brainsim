@@ -36,7 +36,7 @@ public class HierarchyPanel : Panel
     private void DisplayHierarchyNode(HierarchyNode hierarchyNode)
     {
         expandedNodes[hierarchyNode.label] = EditorGUILayout.Foldout(expandedNodes[hierarchyNode.label], hierarchyNode.label, true);
-        if (!expandedNodes[hierarchyNode.label]) return; // If not expanded, do not display children
+        if (!expandedNodes[hierarchyNode.label]) return;
         EditorGUI.indentLevel++;
         foreach (KeyValuePair<string, string> relationship in data.nodes[hierarchyNode.label].relationships) EditorGUILayout.LabelField($"{relationship.Key} -> {relationship.Value}");
         foreach (KeyValuePair<string, HierarchyNode> child in hierarchyNode.children)
@@ -71,6 +71,8 @@ public class HierarchyPanel : Panel
         }
         RelationshipPanel.SetData(data);
         RelationshipPanel.UpdatePanel();
+        QueryPanel.SetData(data);
+        QueryPanel.UpdatePanel();
     }
     private static void UpdateNode()
     {

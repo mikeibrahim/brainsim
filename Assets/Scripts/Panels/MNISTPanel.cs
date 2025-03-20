@@ -15,6 +15,9 @@ public class MNISTPanel : EditorWindow
     private static int carouselSize = 5;
     private static string labelInput = "";
     private static readonly string savePath = "Assets/MNIST_Images/";
+    private static int threshold = 7;
+    private static int minLineLength = 3;
+    private static int minGapLength = 5;
 
     [MenuItem("Window/MNIST Panel")]
     public static void ShowWindow() => GetWindow<MNISTPanel>("Pixel Canvas");
@@ -67,7 +70,22 @@ public class MNISTPanel : EditorWindow
         if (GUILayout.Button("Delete Image")) DeleteImage(labelInput);
         GUI.enabled = true;
 
-        if (GUILayout.Button("Send to UKS_Data")) SendToUKSData();
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("Threshold:", GUILayout.Width(100));
+        threshold = EditorGUILayout.IntField(threshold);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("Min Line Length:", GUILayout.Width(100));
+        minLineLength = EditorGUILayout.IntField(minLineLength);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("Min Gap Length:", GUILayout.Width(100));
+        minGapLength = EditorGUILayout.IntField(minGapLength);
+        EditorGUILayout.EndHorizontal();
+
+        if (GUILayout.Button("Send filepath to UKS_Data")) SendToUKSData();
         if (savedImages.Count > 0)
         {
             GUILayout.Label("Saved Images", EditorStyles.boldLabel);
@@ -155,6 +173,44 @@ public class MNISTPanel : EditorWindow
     void SendToUKSData()
     {
         Debug.Log("Sending image to UKS_Data...");
+        // this is where i would process the image and encode it into the brain using the efficient data storage methods
+        // i want to replicate the v1 and v2 complexes in the brain using the canny and hough transforms
+        List<ArcHoughDetector.Feature> features = ArcHoughDetector.DetectFeatures(canvas, threshold, minLineLength, minGapLength);
+        Debug.Log($"Detected {features.Count} features from image '{labelInput}'.");
+
+        foreach (var feature in features)
+        {
+            if (feature is ArcHoughDetector.EdgeStroke edge)
+            {
+                Debug.Log($"Edge: ({edge.StartX}, {edge.StartY}) to ({edge.EndX}, {edge.EndY})");
+            }
+            else if (feature is ArcHoughDetector.ArcStroke arc)
+            {
+                Debug.Log($"Arc: Center ({arc.CenterX}, {arc.CenterY}), Radius {arc.Radius}, " +
+                                  $"Start {arc.StartAngle}°, End {arc.EndAngle}°");
+            }
+        }
+
+        DisplayFeatures(features);
+    }
+
+    void DisplayFeatures(List<ArcHoughDetector.Feature> features)
+    {
+        // make a red dot for edges and a blue dot for arc centers in the canvas
+        foreach (var feature in features)
+        {
+            if (feature is ArcHoughDetector.EdgeStroke edge)
+            {
+                canvas.SetPixel((int)edge.StartX, canvasSize.y - 1 - (int)edge.StartY, Color.red);
+                canvas.SetPixel((int)edge.EndX, canvasSize.y - 1 - (int)edge.EndY, Color.red);
+            }
+            else if (feature is ArcHoughDetector.ArcStroke arc)
+            {
+                canvas.SetPixel((int)arc.CenterX, canvasSize.y - 1 - (int)arc.CenterY, Color.blue);
+            }
+        }
+        canvas.Apply();
+        Repaint();
     }
 
     private static void UpdateSavedImages()
